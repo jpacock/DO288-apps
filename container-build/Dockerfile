@@ -2,3 +2,5 @@
 FROM quay.io/redhattraining/httpd-parent
 
 EXPOSE 8080
+
+LABEL io.openshift.expose-services="8080:http"
