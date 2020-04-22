@@ -85,8 +85,7 @@ pipeline {
 		sh '''
 			oc project ${DEV_PROJECT}
 			oc create new-app --name ${APP_NAME} \
-			${APP_NAME}:latest~${APP_GIT_URL}#review-cicd \
-			--context-dir movies
+			${APP_NAME}:latest
 			
 			oc expose svc/${APP_NAME}
 		   '''
@@ -100,7 +99,6 @@ pipeline {
 	    script {	
 		openshift.withCluster() {
 			openshift.withProject ( "${DEV_PROJECT}" ) {
-				def deployment = openshift.selector("dc", "${APP_NAME}").rollout()
 				openshift.selector("dc", "${APP_NAME}").related('pods').untilEach(1) {
 					return (it.object().status.phase == "Running")
 				}
@@ -135,6 +133,11 @@ pipeline {
 
                 echo '### Creating a new app in Staging ###'
                 // TODO: Create a new app in staging and expose the service
+		sh '''
+			oc new-app --name ${APP_NAME} \
+			-i ${APP_NAME}:stage -n ${STAGE_PROJECT}
+			oc expose svc/${APP_NAME} -n ${STAGE_PROJECT}
+		   '''
             }
         }
 
